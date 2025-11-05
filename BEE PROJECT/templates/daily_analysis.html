@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Daily Analysis - {{ month }}</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Summary</h5>
+                        <p><strong>Total Days with Data:</strong> {{ total_days }}</p>
+                        <p><strong>Most Frequent Max Consumer:</strong> {{ most_frequent_max[0] }}</p>
+                        <p><strong>Days as Maximum:</strong> {{ most_frequent_max[1] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Maximum Power Consuming Device Each Day</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Maximum Consumer</th>
+                                <th>Consumption (kWh)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for date, (appliance, consumption) in daily_max_consumers.items()|sort %}
+                            <tr>
+                                <td>{{ date }}</td>
+                                <td><strong>{{ appliance }}</strong></td>
+                                <td>{{ "%.2f"|format(consumption) }} kWh</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if appliance_days %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Days as Maximum Consumer</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Appliance</th>
+                                <th>Days as Maximum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appliance, days in appliance_days.items()|sort(attribute='1', reverse=true) %}
+                            <tr>
+                                <td>{{ appliance }}</td>
+                                <td>{{ days }} day(s)</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

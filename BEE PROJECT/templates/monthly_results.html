@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Monthly Results - {{ month }}</h2>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Select Month</label>
+                        <select class="form-select" name="month" onchange="this.form.submit()">
+                            {% for avail_month in available_months %}
+                            <option value="{{ avail_month }}" {% if avail_month == month %}selected{% endif %}>
+                                {{ avail_month }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Country</label>
+                        <select class="form-select" name="country" onchange="this.form.submit()">
+                            {% for country in countries %}
+                            <option value="{{ country }}" {% if country == country %}selected{% endif %}>
+                                {{ country }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card consumption-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Consumption</h5>
+                        <h2 class="text-primary">{{ "%.2f"|format(total_kwh) }} kWh</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card consumption-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Cost</h5>
+                        <h2 class="text-success">${{ "%.2f"|format(total_cost) }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card consumption-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Carbon Footprint</h5>
+                        <h2 class="text-warning">{{ "%.2f"|format(carbon_footprint) }} kg CO2</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Appliance Breakdown</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Appliance</th>
+                                <th>Consumption (kWh)</th>
+                                <th>Percentage</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appliance, consumption in monthly_totals.items() %}
+                            {% if consumption > 0 %}
+                            <tr>
+                                <td>{{ appliance }}</td>
+                                <td>{{ "%.2f"|format(consumption) }} kWh</td>
+                                <td>{{ "%.1f"|format((consumption / total_kwh) * 100) }}%</td>
+                                <td>${{ "%.2f"|format(consumption * COUNTRY_DATA[country].cost_per_kwh) }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Daily Maximum Consumers</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Maximum Consumer</th>
+                                <th>Consumption (kWh)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for date, (appliance, consumption) in daily_max_consumers.items()|sort %}
+                            <tr>
+                                <td>{{ date }}</td>
+                                <td>{{ appliance }}</td>
+                                <td>{{ "%.2f"|format(consumption) }} kWh</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

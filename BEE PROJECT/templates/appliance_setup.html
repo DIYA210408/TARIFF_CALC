@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Appliance Setup</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Add New Appliance</h5>
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Appliance Name</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Power Rating (Watts)</label>
+                                <input type="number" class="form-control" name="power_watts" step="0.1" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Appliance</button>
+                </form>
+            </div>
+        </div>
+
+        {% if appliances %}
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Added Appliances</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Appliance Name</th>
+                                <th>Power (Watts)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appliance in appliances %}
+                            <tr>
+                                <td>{{ appliance.name }}</td>
+                                <td>{{ appliance.power_watts }}W</td>
+                                <td>
+                                    <a href="/delete-appliance/{{ appliance.id }}" class="btn btn-danger btn-sm" 
+                                       onclick="return confirm('Are you sure?')">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-4">
+            No appliances added yet. Please add at least one appliance to continue.
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                {% if appliances %}
+                <a href="/daily-input" class="btn btn-success w-100 mb-2">Go to Daily Input →</a>
+                <a href="/monthly-results" class="btn btn-info w-100">View Monthly Results</a>
+                {% else %}
+                <p class="text-muted">Add appliances first to access other features.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

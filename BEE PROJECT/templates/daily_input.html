@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Daily Usage Input</h2>
+        
+        {% if not appliances %}
+        <div class="alert alert-warning">
+            No appliances found. Please <a href="/appliance-setup">add appliances</a> first.
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="dailyForm">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Select Date</label>
+                            <input type="date" class="form-control" name="date" id="dateInput" 
+                                   value="{{ current_month }}-{{ '%02d' % current_day }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Country</label>
+                            <select class="form-select" name="country">
+                                {% for country in countries %}
+                                <option value="{{ country }}">{{ country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Save Daily Data</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Appliance</th>
+                                    <th>Power (W)</th>
+                                    <th>Hours Used</th>
+                                    <th>Daily Consumption (kWh)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appliance in appliances %}
+                                <tr>
+                                    <td>{{ appliance.name }}</td>
+                                    <td>{{ appliance.power_watts }}W</td>
+                                    <td>
+                                        <input type="number" class="form-control hours-input" 
+                                               name="hours_{{ appliance.id }}" 
+                                               value="0" step="0.1" min="0" max="24"
+                                               data-power="{{ appliance.power_watts }}"
+                                               onchange="calculateConsumption(this)">
+                                    </td>
+                                    <td>
+                                        <span class="consumption-value">0.00</span> kWh
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Days with Data ({{ current_month }})</h5>
+                {% if days_with_data %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for day in days_with_data %}
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadDayData('{{ day }}')">
+                        {{ day }}
+                    </button>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No data saved for this month yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function calculateConsumption(input) {
+    const power = parseFloat(input.getAttribute('data-power'));
+    const hours = parseFloat(input.value) || 0;
+    const consumption = (power * hours) / 1000;
+    const consumptionCell = input.parentElement.nextElementSibling;
+    consumptionCell.querySelector('.consumption-value').textContent = consumption.toFixed(2);
+}
+
+function loadDayData(date) {
+    document.getElementById('dateInput').value = date;
+    
+    fetch(`/get-day-data/${date}`)
+        .then(response => response.json())
+        .then(data => {
+            document.querySelectorAll('.hours-input').forEach(input => {
+                const applianceId = input.name.replace('hours_', '');
+                if (data[applianceId]) {
+                    input.value = data[applianceId].hours_used;
+                    calculateConsumption(input);
+                } else {
+                    input.value = 0;
+                    calculateConsumption(input);
+                }
+            });
+        });
+}
+
+// Calculate initial consumptions
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.hours-input').forEach(input => {
+        calculateConsumption(input);
+    });
+});
+</script>
+{% endblock %}
